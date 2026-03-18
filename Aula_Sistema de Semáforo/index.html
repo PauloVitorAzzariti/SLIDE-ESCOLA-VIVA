@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aula - Sensores, LEDs e Protoboard</title>
+
+<!-- Fonte Montserrat e Font Awesome -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+  :root {
+    --azul: #0054A6;
+    --verde: #00A859;
+    --amarelo: #FFD200;
+    --cinza: #f5f5f5;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    background: white;
+    color: #333;
+    overflow: hidden;
+  }
+
+  .logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    max-width: 140px;
+    z-index: 10;
+  }
+
+  .slide-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+  }
+
+  .slide {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 1000px;
+    width: 100%;
+    padding: 30px;
+    background: var(--cinza);
+    border-radius: 20px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  .slide.active {
+    display: flex;
+  }
+
+  h1,
+  h2 {
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: var(--azul);
+  }
+
+  p,
+  li {
+    font-size: 1.2rem;
+    line-height: 1.6;
+  }
+
+  ul {
+    text-align: left;
+    margin-top: 10px;
+    padding-left: 20px;
+  }
+
+  /* Layout imagens lado a lado */
+  .imagens-lado-a-lado {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 25px;
+    flex-wrap: wrap;
+  }
+
+  .imagens-lado-a-lado img {
+    width: 48%;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+  }
+
+  .imagens-lado-a-lado img:hover {
+    transform: scale(1.05);
+  }
+
+  .component-img {
+    max-width: 320px;
+    border-radius: 10px;
+    margin-top: 20px;
+    transition: transform 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .component-img:hover {
+    transform: scale(1.05);
+  }
+
+  .nav-buttons {
+    position: absolute;
+    bottom: 30px;
+    display: flex;
+    gap: 20px;
+    z-index: 10;
+  }
+
+  button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: 0.3s;
+    color: white;
+  }
+
+  #prev {
+    background: var(--verde);
+  }
+  #next {
+    background: var(--azul);
+  }
+  button:hover {
+    filter: brightness(1.1);
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  a {
+    color: var(--azul);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsivo */
+  @media (max-width: 700px) {
+    .imagens-lado-a-lado img {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+  <!-- Logo -->
+  <img
+    src="img/Logo.png"
+    class="logo"
+    alt="Escola Viva"
+  />
+
+  <div class="slide-container">
+    <!-- Slide 1 -->
+    <div class="slide active">
+      <h1>Introdução a Sensores, LEDs e Componentes Eletrônicos</h1>
+      <p>
+        <strong>Objetivo:</strong> Compreender o funcionamento e aplicação de
+        componentes eletrônicos básicos e realizar prática no Tinkercad.
+      </p>
+      <img
+        src="img/projeto ldr sirene_bb.png"
+        class="component-img"
+        alt="LED"
+      />
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="slide">
+      <h2>1. Introdução</h2>
+      <p>
+        A eletrônica está presente no dia a dia: celulares, semáforos, controles
+        remotos, alarmes e muito mais.
+      </p>
+      <img
+        src="img/dispositivos.jpg"
+        class="component-img"
+        alt="LEDs e Sensores"
+      />
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="slide">
+      <h2>LED - Light Emitting Diode</h2>
+      <ul>
+        <li>Emite luz quando a corrente elétrica passa por ele.</li>
+        <li>Possui polaridade (Perna maior = positivo, menor = negativo).</li>
+        <li>Não ligar sem resistor (risco de queimar).</li>
+      </ul>
+      <img
+        src="img/Leds.png"
+        class="component-img"
+        alt="LED Esquema"
+      />
+    </div>
+
+    <!-- Slide 4 -->
+    <div class="slide">
+      <h2>Resistor</h2>
+      <ul>
+        <li>Limita a corrente elétrica.</li>
+        <li>Protege LEDs e outros dispositivos.</li>
+        <li>Unidade de medida: Ohms (Ω).</li>
+      </ul>
+      <div class="imagens-lado-a-lado">
+        <img
+          src="img/Resistores.png"
+          alt="Protoboard vista geral"
+        />
+        <img
+          src="img/Resistores2.png"
+          alt="Protoboard com fios jumper"
+        />
+      </div>
+    </div>
+
+    <!-- Slide 5 - Protoboard com imagens lado a lado -->
+    <div class="slide">
+      <h2>Protoboard</h2>
+      <p>
+        O <strong>protoboard</strong> é uma placa de ensaio usada para montar
+        circuitos eletrônicos sem solda.
+      </p>
+      <ul>
+        <li>Facilita testes e modificações no circuito.</li>
+        <li>Conexões internas permitem ligar componentes com fios jumper.</li>
+        <li>Ideal para prototipagem antes da montagem definitiva.</li>
+      </ul>
+
+      <div class="imagens-lado-a-lado">
+        <img
+          src="img/plotobord.jpg"
+          alt="Protoboard vista geral"
+        />
+      </div>
+    </div>
+
+    <!-- Slide 6 -->
+    <div class="slide">
+      <h2>3. Circuito Básico - Acender LED</h2>
+      <p>
+        Positivo → Resistor → LED (perna maior) <br /> LED (perna menor) →
+        Negativo
+      </p>
+      <img
+        src="img/circuito.png"
+        class="component-img"
+        alt="Circuito LED"
+      />
+    </div>
+
+    <!-- Slide 7 -->
+    <div class="slide">
+      <h2>4. Prática no Tinkercad</h2>
+      <p>
+        Acesse:
+        <a href="https://www.tinkercad.com" target="_blank"
+          >tinkercad.com</a
+        >
+      </p>
+      <ul>
+        <li>Insira LED, resistor, fios e bateria.</li>
+        <li>Conecte conforme esquema e simule.</li>
+      </ul>
+      <img
+        src="img/ArduinoProtoboard-Sequencial-1024x602.png"
+        class="component-img"
+        alt="Simulação Tinkercad"
+      />
+    </div>
+
+    <!-- Slide 8 -->
+    <div class="slide">
+      <h2>Desafio</h2>
+      <ul>
+        <li>Faça as conexõese observe o brilho do LED.</li>
+      </ul>
+      <img
+        src="https://www.electronicsforu.com/wp-contents/uploads/2019/10/ldr-circuit.jpg"
+        class="component-img"
+        alt="Desafio LDR"
+      />
+    </div>
+
+    <!-- Navegação -->
+    <div class="nav-buttons">
+      <button id="prev"><i class="fas fa-arrow-left"></i> Anterior</button>
+      <button id="next">Próximo <i class="fas fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    let currentSlide = 0;
+
+    document.getElementById('next').addEventListener('click', () => {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+    });
+
+    document.getElementById('prev').addEventListener('click', () => {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+      slides[currentSlide].classList.add('active');
+    });
+  </script>
+</body>
+</html>
