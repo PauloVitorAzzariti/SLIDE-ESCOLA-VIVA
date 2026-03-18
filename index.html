@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Aula - Sensores, LEDs e Protoboard</title>
+<title>Aula Interativa: Robótica e Circuitos</title>
 
-<!-- Fonte Montserrat e Font Awesome -->
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
   :root {
@@ -15,6 +15,7 @@
     --verde: #00A859;
     --amarelo: #FFD200;
     --cinza: #f5f5f5;
+    --err: #d9534f;
   }
 
   body {
@@ -23,13 +24,42 @@
     background: white;
     color: #333;
     overflow: hidden;
+    height: 100vh;
+  }
+
+  .progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background: var(--cinza);
+    z-index: 1000;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--azul);
+    width: 0%;
+    transition: width 0.4s ease;
   }
 
   .logo {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    max-width: 140px;
+    top: 25px;
+    left: 25px;
+    max-width: 120px;
+    z-index: 10;
+  }
+
+  #scoreBox {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    background: var(--azul);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 700;
     z-index: 10;
   }
 
@@ -39,8 +69,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px;
-    box-sizing: border-box;
+    padding: 20px;
   }
 
   .slide {
@@ -48,288 +77,333 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    max-width: 1000px;
+    max-width: 950px;
     width: 100%;
-    padding: 30px;
+    padding: 40px;
     background: var(--cinza);
-    border-radius: 20px;
-    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
-    animation: fadeIn 0.6s ease-in-out;
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    max-height: 85vh;
+    overflow-y: auto;
   }
 
-  .slide.active {
-    display: flex;
-  }
+  .slide.active { display: flex; animation: fadeIn 0.5s ease; }
 
-  h1,
-  h2 {
-    margin-bottom: 20px;
-    font-weight: 700;
-    color: var(--azul);
-  }
-
-  p,
-  li {
-    font-size: 1.2rem;
-    line-height: 1.6;
-  }
-
-  ul {
-    text-align: left;
-    margin-top: 10px;
-    padding-left: 20px;
-  }
-
-  /* Layout imagens lado a lado */
-  .imagens-lado-a-lado {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    margin-top: 25px;
-    flex-wrap: wrap;
-  }
-
-  .imagens-lado-a-lado img {
-    width: 48%;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-    transition: transform 0.3s ease;
-  }
-
-  .imagens-lado-a-lado img:hover {
-    transform: scale(1.05);
-  }
+  h1, h2 { color: var(--azul); margin-bottom: 20px; }
+  p { font-size: 1.15rem; line-height: 1.6; margin-bottom: 15px; }
+  ul { text-align: left; margin: 10px 0; font-size: 1.1rem; }
+  li { margin-bottom: 8px; }
 
   .component-img {
-    max-width: 320px;
-    border-radius: 10px;
-    margin-top: 20px;
-    transition: transform 0.3s ease;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 15px;
+    margin: 15px 0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    background: white;
+    padding: 10px;
   }
 
-  .component-img:hover {
-    transform: scale(1.05);
-  }
-
-  .nav-buttons {
-    position: absolute;
-    bottom: 30px;
-    display: flex;
-    gap: 20px;
-    z-index: 10;
-  }
-
-  button {
-    padding: 12px 25px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
+  .quiz-options { width: 100%; display: grid; gap: 10px; margin-top: 15px; }
+  .opt-btn {
+    background: white;
+    border: 2px solid var(--azul);
+    padding: 15px;
+    border-radius: 12px;
     cursor: pointer;
+    font-weight: 600;
     transition: 0.3s;
-    color: white;
+    font-family: 'Montserrat';
+    text-align: left;
+    font-size: 1rem;
   }
+  .opt-btn:hover:not(:disabled) { background: #eef6ff; }
+  .correct { background: var(--verde) !important; color: white !important; border-color: var(--verde) !important; }
+  .wrong { background: var(--err) !important; color: white !important; border-color: var(--err) !important; }
 
-  #prev {
-    background: var(--verde);
-  }
-  #next {
-    background: var(--azul);
-  }
-  button:hover {
-    filter: brightness(1.1);
-  }
+  .final-form { background: white; padding: 25px; border-radius: 15px; border: 2px solid var(--azul); width: 100%; max-width: 450px; }
+  select, input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-family: 'Montserrat'; font-size: 1rem; }
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+  .nav-buttons { position: absolute; bottom: 30px; display: flex; gap: 20px; }
+  .btn-main { padding: 12px 30px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: white; transition: 0.3s; font-family: 'Montserrat'; }
+  #btnPrev { background: var(--verde); }
+  #btnNext { background: var(--azul); }
+  .btn-main:disabled { opacity: 0.3; }
 
-  a {
-    color: var(--azul);
-    text-decoration: none;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  /* Responsivo */
-  @media (max-width: 700px) {
-    .imagens-lado-a-lado img {
-      width: 100%;
-    }
-  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
-  <!-- Logo -->
-  <img
-    src="img/Logo.png"
-    class="logo"
-    alt="Escola Viva"
-  />
 
-  <div class="slide-container">
-    <!-- Slide 1 -->
-    <div class="slide active">
-      <h1>Introdução a Sensores, LEDs e Componentes Eletrônicos</h1>
-      <p>
-        <strong>Objetivo:</strong> Compreender o funcionamento e aplicação de
-        componentes eletrônicos básicos e realizar prática no Tinkercad.
-      </p>
-      <img
-        src="img/projeto ldr sirene_bb.png"
-        class="component-img"
-        alt="LED"
-      />
-    </div>
+<div class="progress-container"><div class="progress-bar" id="pBar"></div></div>
+<img src="img/Logo.png" class="logo" alt="Logo">
+<div id="scoreBox">Pontos: <span id="valScore">0</span></div>
 
-    <!-- Slide 2 -->
-    <div class="slide">
-      <h2>1. Introdução</h2>
-      <p>
-        A eletrônica está presente no dia a dia: celulares, semáforos, controles
-        remotos, alarmes e muito mais.
-      </p>
-      <img
-        src="img/dispositivos.jpg"
-        class="component-img"
-        alt="LEDs e Sensores"
-      />
-    </div>
+<div class="slide-container">
+  
+  <div class="slide active">
+    <h1>🔌 Introdução à Robótica</h1>
+    <p>Bem-vindos! Hoje vamos entender como a eletricidade dá vida aos robôs. Para isso, precisamos de componentes que controlem essa energia.</p>
+    <img src="img/dispositivos.jpg" class="component-img">
+    <p>Vamos explorar os 3 pilares básicos: <strong>LED, Resistor e Protoboard.</strong></p>
+  </div>
 
-    <!-- Slide 3 -->
-    <div class="slide">
-      <h2>LED - Light Emitting Diode</h2>
-      <ul>
-        <li>Emite luz quando a corrente elétrica passa por ele.</li>
-        <li>Possui polaridade (Perna maior = positivo, menor = negativo).</li>
-        <li>Não ligar sem resistor (risco de queimar).</li>
-      </ul>
-      <img
-        src="img/Leds.png"
-        class="component-img"
-        alt="LED Esquema"
-      />
-    </div>
+  <div class="slide">
+    <h2>1. O LED (Luz do Robô)</h2>
+    <p>O LED é um componente que emite luz. Mas atenção: ele é "fresco"! Se ligar invertido, ele não acende. Se ligar com muita força, ele queima.</p>
+    <ul>
+      <li><strong>Anodo (+):</strong> Perna maior.</li>
+      <li><strong>Catodo (-):</strong> Perna menor.</li>
+    </ul>
+    <img src="img/Leds.png" class="component-img">
+  </div>
 
-    <!-- Slide 4 -->
-    <div class="slide">
-      <h2>Resistor</h2>
-      <ul>
-        <li>Limita a corrente elétrica.</li>
-        <li>Protege LEDs e outros dispositivos.</li>
-        <li>Unidade de medida: Ohms (Ω).</li>
-      </ul>
-      <div class="imagens-lado-a-lado">
-        <img
-          src="img/Resistores.png"
-          alt="Protoboard vista geral"
-        />
-        <img
-          src="img/Resistores2.png"
-          alt="Protoboard com fios jumper"
-        />
-      </div>
-    </div>
+  <div class="slide">
+    <h2>2. O Resistor (O Segurança)</h2>
+    <p>A bateria manda muita energia. O resistor serve para "segurar" o excesso de eletricidade e proteger o LED. Sem ele, nosso LED teria uma vida bem curta!</p>
+    <img src="img/Resistores.png" class="component-img">
+  </div>
 
-    <!-- Slide 5 - Protoboard com imagens lado a lado -->
-    <div class="slide">
-      <h2>Protoboard</h2>
-      <p>
-        O <strong>protoboard</strong> é uma placa de ensaio usada para montar
-        circuitos eletrônicos sem solda.
-      </p>
-      <ul>
-        <li>Facilita testes e modificações no circuito.</li>
-        <li>Conexões internas permitem ligar componentes com fios jumper.</li>
-        <li>Ideal para prototipagem antes da montagem definitiva.</li>
-      </ul>
+  <div class="slide">
+    <h2>3. Protoboard (O Tabuleiro)</h2>
+    <p>É nela que montamos tudo. Pense nela como um LEGO elétrico: você encaixa as peças nos buraquinhos e elas se conectam por trilhas de metal que estão escondidas lá dentro.</p>
+    <img src="img/plotobord.jpg" class="component-img">
+  </div>
 
-      <div class="imagens-lado-a-lado">
-        <img
-          src="img/plotobord.jpg"
-          alt="Protoboard vista geral"
-        />
-      </div>
-    </div>
+  <div class="slide">
+    <h2>4. Circuito Fechado</h2>
+    <p>A eletricidade é como uma pista de corrida circular. Ela sai do positivo (+), passa pelos componentes e precisa voltar para o negativo (-). Se o caminho abrir, a luz apaga!</p>
+    <img src="img/circuito.png" class="component-img">
+  </div>
 
-    <!-- Slide 6 -->
-    <div class="slide">
-      <h2>3. Circuito Básico - Acender LED</h2>
-      <p>
-        Positivo → Resistor → LED (perna maior) <br /> LED (perna menor) →
-        Negativo
-      </p>
-      <img
-        src="img/circuito.png"
-        class="component-img"
-        alt="Circuito LED"
-      />
-    </div>
-
-    <!-- Slide 7 -->
-    <div class="slide">
-      <h2>4. Prática no Tinkercad</h2>
-      <p>
-        Acesse:
-        <a href="https://www.tinkercad.com" target="_blank"
-          >tinkercad.com</a
-        >
-      </p>
-      <ul>
-        <li>Insira LED, resistor, fios e bateria.</li>
-        <li>Conecte conforme esquema e simule.</li>
-      </ul>
-      <img
-        src="img/ArduinoProtoboard-Sequencial-1024x602.png"
-        class="component-img"
-        alt="Simulação Tinkercad"
-      />
-    </div>
-
-    <!-- Slide 8 -->
-    <div class="slide">
-      <h2>Desafio</h2>
-      <ul>
-        <li>Faça as conexõese observe o brilho do LED.</li>
-      </ul>
-      <img
-        src="https://www.electronicsforu.com/wp-contents/uploads/2019/10/ldr-circuit.jpg"
-        class="component-img"
-        alt="Desafio LDR"
-      />
-    </div>
-
-    <!-- Navegação -->
-    <div class="nav-buttons">
-      <button id="prev"><i class="fas fa-arrow-left"></i> Anterior</button>
-      <button id="next">Próximo <i class="fas fa-arrow-right"></i></button>
+  <div class="slide" data-q="1">
+    <h2>Pergunta 01</h2>
+    <p>Qual a função do Resistor no circuito?</p>
+    <div class="quiz-options">
+      <button class="opt-btn" onclick="check(this, true)">Limitar a corrente para proteger o LED</button>
+      <button class="opt-btn" onclick="check(this, false)">Aumentar a carga da bateria</button>
+      <button class="opt-btn" onclick="check(this, false)">Trocar a cor da luz do LED</button>
     </div>
   </div>
 
-  <script>
-    const slides = document.querySelectorAll('.slide');
-    let currentSlide = 0;
+  <div class="slide" data-q="2">
+    <h2>Pergunta 02</h2>
+    <p>Como identificamos o lado Positivo (Anodo) do LED?</p>
+    <div class="quiz-options">
+      <button class="opt-btn" onclick="check(this, false)">Pela perna mais curta</button>
+      <button class="opt-btn" onclick="check(this, true)">Pela perna mais longa</button>
+      <button class="opt-btn" onclick="check(this, false)">Pela cor da cabeça do LED</button>
+    </div>
+  </div>
 
-    document.getElementById('next').addEventListener('click', () => {
-      slides[currentSlide].classList.remove('active');
-      currentSlide = (currentSlide + 1) % slides.length;
-      slides[currentSlide].classList.add('active');
-    });
+  <div class="slide" data-q="3">
+    <h2>Pergunta 03</h2>
+    <p>Para que serve a Protoboard?</p>
+    <div class="quiz-options">
+      <button class="opt-btn" onclick="check(this, true)">Montar circuitos sem precisar de solda</button>
+      <button class="opt-btn" onclick="check(this, false)">Gerar energia para o robô</button>
+      <button class="opt-btn" onclick="check(this, false)">Guardar os componentes usados</button>
+    </div>
+  </div>
 
-    document.getElementById('prev').addEventListener('click', () => {
-      slides[currentSlide].classList.remove('active');
-      currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-      slides[currentSlide].classList.add('active');
-    });
-  </script>
+  <div class="slide" data-q="4">
+    <h2>Pergunta 04</h2>
+    <p>O que acontece se o circuito estiver "Aberto"?</p>
+    <div class="quiz-options">
+      <button class="opt-btn" onclick="check(this, false)">A eletricidade passa mais rápido</button>
+      <button class="opt-btn" onclick="check(this, false)">O LED brilha mais forte</button>
+      <button class="opt-btn" onclick="check(this, true)">A energia não flui e o LED não acende</button>
+    </div>
+  </div>
+
+  <div class="slide" data-q="5">
+    <h2>Pergunta 05</h2>
+    <p>Qual a unidade de medida da resistência elétrica?</p>
+    <div class="quiz-options">
+      <button class="opt-btn" onclick="check(this, true)">Ohms (Ω)</button>
+      <button class="opt-btn" onclick="check(this, false)">Volts (V)</button>
+      <button class="opt-btn" onclick="check(this, false)">Watts (W)</button>
+    </div>
+  </div>
+
+  <div class="slide" data-q="6">
+    <h2>Pergunta 06</h2>
+    <p>O LED é um componente polarizado. Isso significa que:</p>
+    <div class="quiz-options">
+      <button class="opt-btn" onclick="check(this, true)">Tem posição certa para ligar (+ e -)</button>
+      <button class="opt-btn" onclick="check(this, false)">Pode ser ligado de qualquer lado</button>
+      <button class="opt-btn" onclick="check(this, false)">Funciona apenas com pilhas grandes</button>
+    </div>
+  </div>
+
+  <div class="slide" data-q="7">
+    <h2>Pergunta 07</h2>
+    <p>Na Protoboard, como os componentes se conectam?</p>
+    <div class="quiz-options">
+      <button class="opt-btn" onclick="check(this, false)">Através de cola especial</button>
+      <button class="opt-btn" onclick="check(this, true)">Através de trilhas metálicas internas</button>
+      <button class="opt-btn" onclick="check(this, false)">Através de fios soldados nos furos</button>
+    </div>
+  </div>
+
+  <div class="slide" data-q="8">
+    <h2>Pergunta 08</h2>
+    <p>O que é o Tinkercad?</p>
+    <div class="quiz-options">
+      <button class="opt-btn" onclick="check(this, true)">Um simulador online de eletrônica e 3D</button>
+      <button class="opt-btn" onclick="check(this, false)">Um tipo de bateria recarregável</button>
+      <button class="opt-btn" onclick="check(this, false)">Uma ferramenta de cortar fios</button>
+    </div>
+  </div>
+
+  <div class="slide" data-q="9">
+    <h2>Pergunta 09</h2>
+    <p>Por que os robôs precisam de sensores e componentes?</p>
+    <div class="quiz-options">
+      <button class="opt-btn" onclick="check(this, true)">Para perceber o ambiente e agir</button>
+      <button class="opt-btn" onclick="check(this, false)">Apenas para ficarem mais bonitos</button>
+      <button class="opt-btn" onclick="check(this, false)">Para pesarem menos</button>
+    </div>
+  </div>
+
+  <div class="slide" data-q="10">
+    <h2>Pergunta 10</h2>
+    <p>No circuito básico do LED, a energia deve ir do polo positivo para...</p>
+    <div class="quiz-options">
+      <button class="opt-btn" onclick="check(this, true)">O Resistor, depois o LED e voltar ao negativo</button>
+      <button class="opt-btn" onclick="check(this, false)">Direto para o negativo sem passar por nada</button>
+      <button class="opt-btn" onclick="check(this, false)">O chão da sala</button>
+    </div>
+  </div>
+
+  <div class="slide">
+    <h2>Relatório Final da Aula</h2>
+    <div class="final-form">
+      <input type="text" id="nomeProf" placeholder="Nome do Responsável/Professor">
+      <select id="selTurma">
+        <option value="">Selecione a Turma</option>
+        <option value="Robótica - Turma A">Robótica - Turma A</option>
+        <option value="Robótica - Turma B">Robótica - Turma B</option>
+      </select>
+      <select id="selDia">
+        <option value="">Dia da Semana</option>
+        <option value="Segunda-feira">Segunda-feira</option>
+        <option value="Terça-feira">Terça-feira</option>
+        <option value="Quarta-feira">Quarta-feira</option>
+        <option value="Quinta-feira">Quinta-feira</option>
+        <option value="Sexta-feira">Sexta-feira</option>
+      </select>
+      <button class="btn-main" id="btnNext" style="width:100%; margin-top:10px;" onclick="gerarRelatorio()">Gerar PDF com Avaliação Geral</button>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-main" id="btnPrev" onclick="changeSlide(-1)">Anterior</button>
+    <button class="btn-main" id="btnNext" onclick="changeSlide(1)">Próximo</button>
+  </div>
+
+</div>
+
+<script>
+  let current = 0;
+  let score = 0;
+  const slides = document.querySelectorAll('.slide');
+  const pBar = document.getElementById('pBar');
+  const scoreVal = document.getElementById('valScore');
+
+  function updateSlide() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === current));
+    pBar.style.width = ((current / (slides.length - 1)) * 100) + "%";
+    document.getElementById('btnPrev').disabled = (current === 0);
+    
+    // Esconde nav no slide de formulário
+    if(current === slides.length - 1) document.querySelector('.nav-buttons').style.visibility = 'hidden';
+    else document.querySelector('.nav-buttons').style.visibility = 'visible';
+  }
+
+  function changeSlide(n) {
+    if(current + n >= 0 && current + n < slides.length) {
+      current += n;
+      updateSlide();
+    }
+  }
+
+  function check(btn, isCorrect) {
+    const buttons = btn.parentElement.querySelectorAll('.opt-btn');
+    buttons.forEach(b => b.disabled = true);
+
+    if (isCorrect) {
+      btn.classList.add('correct');
+      score += 10;
+    } else {
+      btn.classList.add('wrong');
+      buttons.forEach(b => { if(b.getAttribute('onclick').includes('true')) b.classList.add('correct'); });
+    }
+    scoreVal.innerText = score;
+    setTimeout(() => changeSlide(1), 1500);
+  }
+
+  function gerarRelatorio() {
+    const nome = document.getElementById('nomeProf').value;
+    const turma = document.getElementById('selTurma').value;
+    const dia = document.getElementById('selDia').value;
+
+    if(!nome || !turma || !dia) { alert("Preencha todos os campos."); return; }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Lógica de Avaliação Geral Detalhada
+    let avaliacaoGeral = "";
+    let statusCor = [0, 84, 166];
+
+    if(score >= 90) {
+      avaliacaoGeral = "A turma demonstrou um aproveitamento excepcional. Os alunos compreenderam com clareza a importância da polaridade e a função crítica do resistor na proteção de componentes. Estão aptos para projetos de maior complexidade.";
+      statusCor = [0, 168, 89]; // Verde
+    } else if(score >= 60) {
+      avaliacaoGeral = "A turma apresentou um bom desempenho geral. Houve compreensão sobre os componentes básicos, mas alguns alunos ainda podem ter dúvidas pontuais sobre a leitura da Protoboard ou cálculos de resistência. Recomenda-se uma prática extra de montagem.";
+      statusCor = [255, 180, 0]; // Amarelo
+    } else {
+      avaliacaoGeral = "A turma encontrou dificuldades nos conceitos fundamentais de circuito fechado e polaridade. É necessário reforçar a explicação sobre como a energia percorre a Protoboard e por que os componentes queimam sem proteção antes de avançar para a prática real.";
+      statusCor = [217, 83, 79]; // Vermelho
+    }
+
+    // PDF Styling
+    doc.setFont("Helvetica", "bold");
+    doc.setTextColor(0, 84, 166);
+    doc.text("RELATÓRIO PEDAGÓGICO DE ROBÓTICA", 105, 20, {align: 'center'});
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Documento gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 105, 27, {align: 'center'});
+
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text(`Professor/Responsável: ${nome}`, 20, 45);
+    doc.text(`Unidade: ${turma}`, 20, 53);
+    doc.text(`Cronograma: ${dia}`, 20, 61);
+    
+    doc.setFillColor(245, 245, 245);
+    doc.rect(20, 70, 170, 20, 'F');
+    doc.setTextColor(0, 84, 166);
+    doc.setFont("Helvetica", "bold");
+    doc.text(`DESEMPENHO DA TURMA NO QUIZ: ${score} PONTOS`, 105, 82, {align: 'center'});
+
+    doc.setFontSize(14);
+    doc.setTextColor(statusCor[0], statusCor[1], statusCor[2]);
+    doc.text("AVALIAÇÃO GERAL DO CONTEÚDO:", 20, 105);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(50);
+    doc.setFont("Helvetica", "normal");
+    const splitText = doc.splitTextToSize(avaliacaoGeral, 170);
+    doc.text(splitText, 20, 115);
+
+    doc.save(`Relatorio_${turma}_${dia}.pdf`);
+  }
+
+  updateSlide();
+</script>
+
 </body>
 </html>
